@@ -1,0 +1,605 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>reveal.js</title>
+
+		<link rel="stylesheet" href="dist/reset.css">
+		<link rel="stylesheet" href="dist/reveal.css">
+		<link rel="stylesheet" href="dist/theme/night.css">
+
+        <style>
+            .author {
+                text-align: right;
+            }
+            .name {
+                font-size: 1.2rem;
+                line-height: 2rem;
+            }
+            .job {
+                font-size: 0.8rem;
+                line-height: 1.6rem;
+            }
+            .company {
+                font-size: 0.8rem;
+            }
+            .w-1000 {
+                width: 1000px;
+                margin: 0 auto;
+            }
+            .w-1100 {
+                width: 1100px;
+                margin: 0 auto;
+            }
+            .w-40 {
+                width: 40%;
+                float: left;
+            }
+            .w-50 {
+                width: 50%;
+                float: left;
+            }
+            .w-60 {
+                width: 60%;
+                float: left;
+            }
+            .w-80 {
+                width: 80% !important;
+            }
+
+            code {
+                font-size: 0.9rem;
+            }
+            code.large {
+                font-size: 0.8rem;
+                line-height: 1.1rem;
+            }
+            code.large2 {
+                font-size: 0.7rem;
+                line-height: 1.1rem;
+            }
+
+            .footnote {
+                font-size: 0.8rem;
+            }
+        </style>
+
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="plugin/highlight/monokai.css">
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+                    <div class="w-1100">
+                        <h1 class="r-fit-text" style="text-align: right;">Testing unknown applications<br>with Selenium & WebDriver BiDirectional API</h1>
+                        <div class="author">
+                            <div class="name">Tomasz Wrona</div>
+                            <div class="job">
+                                Tech Lead & Machine Learning Engineer
+                            </div>
+                            <div class="company">
+                                Global App Testing
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section data-background-color="white">
+                    <div class="w-1100">
+                        <h1 class="r-fit-text">A story about testing web applications</h1>
+                        <div style="margin-top: 50px;">
+                            <img alt="A story about testing web application" src="images/application_tests.svg" style="width: 80%;">
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <div class="w-1100">
+                        <h1 class="r-fit-text">Application works as intended?</h1>
+                    </div>
+                </section>
+                <section data-background-color="white">
+                    <img alt="Login form component" src="images/login_form.png">
+                </section>
+                <section data-background-color="black">
+                    <div>
+                        <div class="w-60">
+                            <pre><code class="stretch large language-python" data-trim="" data-line-numbers="1-5|6-16|18-24">
+# Arrange
+def test_user_is_logged_in_after_filling_login_form(
+    driver: WebDriver, application_url: str
+):
+    driver.get(application_url)
+    # Act
+    email = driver.find_element(By.XPATH, "//form/div[1]/label/input")
+    password = driver.find_element(By.XPATH, "//form/div[2]/label/input")
+    submit = driver.find_element(By.XPATH, "//form/button")
+    (
+        ActionChains(driver)
+        .send_keys_to_element(email, "alan@globalapptesting.com")
+        .send_keys_to_element(password, "Alan12345!")
+        .click(submit)
+        .perform()
+    )
+    try:
+        # Assert
+        WebDriverWait(driver, timeout=5).until(
+            expected_conditions.presence_of_element_located(
+                (By.LINK_TEXT, "account")
+            ),
+            "The user hasn't been logged in.",
+        )
+    except TimeoutException as e:
+        pytest.fail(e.msg)
+                    </code></pre>
+                        </div>
+                        <div class="w-40">
+                            <div style="margin-top: 100px;">
+                                <video
+                                    autoplay
+                                    loop
+                                    controls
+                                    muted
+                                    src="images/login_sandbox.mkv">
+                                </video>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section>
+                    <div class="w-1100">
+                        <h1 class="r-fit-text">Before we move on...</h1>
+                    </div>
+                </section>
+                <section data-background-color="white" data-transition="slide-in fade-out">
+                    <img alt="GAT Test Execution" src="images/gat_test_execution.png">
+                </section>
+                <section data-background-color="#bcbcbd" data-transition="fade-in slide-out">
+                    <img alt="GAT Test Execution: autonomous testing" src="images/gat_test_execution_focus.png">
+                </section>
+                <section data-background-color="white">
+                    <img alt="" src="images/agent_high_level.svg" style="width: 80%;">
+                    <p class="footnote">
+                        AI folks, looks familiar?
+                    </p>
+                </section>
+                <section data-background-color="white">
+                    <img alt="" src="images/agent_defects.svg" style="width: 80%;">
+                </section>
+                <section>
+                    <div class="w-1100">
+                        <h1 class="r-fit-text">What happens when you ask Selenium to click a button?</h1>
+                    </div>
+                </section>
+                <section data-background-color="white">
+                    <img alt="" src="images/web_driver_click.png">
+                    <p class="footnote">
+                        Source: <a href="https://w3c.github.io/webdriver/#element-click">https://w3c.github.io/webdriver/#element-click</a>
+                    </p>
+                </section>
+				<section data-background-color="white">
+                    <div class="w-1100">
+                        <img alt="" src="images/selenium_click.svg" style="width: 90%;">
+                    </div>
+				</section>
+                <section data-background-color="#172030">
+                    <div class="w-50">
+                        <pre><code class="stretch large2 language-python" data-line-numbers="" data-trim>
+@pytest.fixture
+def application() -> ThreadedFlaskServer:
+    app = Flask(__name__)
+    app.config.update({"TESTING": True})
+
+    @app.route("/")
+    def index():
+        return """
+        &lt;html&gt;
+            &lt;head&gt;
+                &lt;title&gt;Results page&lt;/title&gt;
+            &lt;/head&gt;
+            &lt;body&gt;
+                &lt;a id=&quot;get-results&quot;&gt;Get results&lt;/a&gt;
+                &lt;div id=&quot;results&quot;&gt;&lt;/div&gt;
+
+                &lt;script type=&quot;text/javascript&quot;&gt;
+                    const button = document.getElementById(&quot;get-results&quot;);
+                    const results = document.getElementById(&quot;results&quot;);
+                    button.addEventListener(&quot;click&quot;, (event) =&gt; {
+                        fetch(document.location.href + &quot;results&quot;)
+                            .then((response) =&gt; response.json())
+                            .then((data) =&gt; results.innerText = data[&quot;data&quot;]);
+                    });
+                &lt;/script&gt;
+            &lt;/body&gt;
+        &lt;/html&gt;
+        """
+
+    @app.route("/results")
+    def results():
+        sleep(5)
+        return jsonify({
+            "data": "some very important data"
+        })
+
+    with ThreadedFlaskServer(app) as server:
+        yield server
+                        </code></pre>
+                    </div>
+                    <div class="w-50">
+                        <pre><code class="stretch large2 language-python" data-trim data-line-numbers>
+def test_results_are_displayed_after_click_button(
+    application: ThreadedFlaskServer, driver: WebDriver
+):
+    driver.get(application.url)
+    button = driver.find_element(By.ID, "get-results")
+    results = driver.find_element(By.ID, "results")
+    button.click()
+    assert results.text == "some very important data"
+                        </code></pre>
+                        <img src="images/assertion_failed.png">
+                    </div>
+                </section>
+                <section>
+                    <div class="w-1100">
+                        <h1 class="r-fit-text">And that was just clicking...</h1>
+                    </div>
+                </section>
+                <section data-background-color="white">
+                    <img alt="" src="images/python_search.gif">
+                </section>
+                <section data-background-color="white">
+                    <div class="w-1100">
+                        <img alt="" src="images/infinite_scroll.gif">
+                    </div>
+                </section>
+                <section>
+                    <div class="w-1100">
+                        <h1 class="r-fit-text">What's happening under the hood?</h1>
+                    </div>
+                </section>
+                <section data-background-color="white">
+                    <div class="w-1000">
+                        <h1 style="font-size: 3rem;">Async requests!</h1>
+                        <img alt="" src="images/sandbox_devtools.png">
+                    </div>
+                </section>
+                <section>
+                    <div class="w-1100">
+                        <h1 class="r-fit-text">Solution: track and await requests</h1>
+                    </div>
+                </section>
+                <section>
+                    <div class="w-1100">
+                        <h1 style="font-size: 5rem;">Source of requests data</h1>
+                        <ol>
+                            <li>Monkeypatching XMLHttpRequest and Fetch API </li>
+                            <li>Custom Chrome plugin</li>
+                            <li>Chrome DevTools Protocol</li>
+                        </ol>
+                    </div>
+                </section>
+                <section data-background-color="white">
+                    <div class="w-1000">
+                        <img alt="" src="images/cdp.png">
+                    </div>
+                </section>
+                <section data-background-color="white">
+                    <div class="w-1000">
+                        <img alt="" src="images/cdp_network.png">
+                    </div>
+                </section>
+                <section>
+                    <div class="w-1100">
+                        <h1 class="r-fit-text">Selenium built-in Chrome DevTools Protocol support</h1>
+                    </div>
+                </section>
+                <section data-background-color="#172030">
+                    <div class="w-1100">
+                        <pre><code class="stretch large2 language-python" data-line-numbers="11" data-trim>
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+
+def geoLocationTest():
+    driver = webdriver.Chrome()
+    Map_coordinates = dict({
+        "latitude": 41.8781,
+        "longitude": -87.6298,
+        "accuracy": 100
+        })
+    driver.execute_cdp_cmd("Emulation.setGeolocationOverride", Map_coordinates)
+    driver.get("&lt;your site url&gt;")
+                        </code></pre>
+                        <p class="footnote">
+                            Source: <a href="https://www.selenium.dev/documentation/webdriver/bidirectional/chrome_devtools/#emulate-geo-location">https://www.selenium.dev/documentation/webdriver/bidirectional/chrome_devtools/#emulate-geo-location</a>
+                        </p>
+                    </div>
+                </section>
+                <section>
+                    <div class="w-1100">
+                        <h1 class="r-fit-text">What about events? WebDriver BiDi API!</h1>
+                    </div>
+                </section>
+                <section data-background-color="white">
+                    <div class="w-1000">
+                        <img alt="" src="images/webdriver_bidi.png">
+                    </div>
+                </section>
+                <section>
+                    <div class="w-1100">
+                        <h1 class="r-fit-text">Selenium supports WebDriver BiDi with Trio</h1>
+                    </div>
+                </section>
+                <section data-transition="slide-in fade-out" data-background-color="#172030">
+                    <div class="w-50">
+                        <pre><code class="stretch large2 language-python" data-line-numbers="" data-trim>
+async def execute_and_await(
+    driver: WebDriver,
+    action: Callable[[], None],
+    timeout: float = 10.0,  # [s]
+    num_checks: int = 10,
+    window_length: float = 1.0,  # [s]
+):
+    requests: dict[str, bool] = {}
+
+    async def request_tracker(
+        session: CdpSession,
+        task_status: "trio._core._run._TaskStatusIgnored" = trio.TASK_STATUS_IGNORED,
+    ):
+        ...
+
+    ready = trio.Event()
+
+    async def await_pending_requests(
+        task_status: "trio._core._run._TaskStatusIgnored" = trio.TASK_STATUS_IGNORED,
+    ):
+        ...
+
+    async with driver.bidi_connection() as bidi_session:
+        ...
+                        </code></pre>
+                    </div>
+                    <div class="w-50">
+                        <img alt="" src="images/request_tracker.svg">
+                    </div>
+                </section>
+                <section data-transition="fade-in fade-out" data-background-color="#172030">
+                    <div class="w-50">
+                        <pre><code class="stretch large2 language-python" data-line-numbers="8-14" data-trim>
+async def execute_and_await(
+    driver: WebDriver,
+    action: Callable[[], None],
+    timeout: float = 10.0,  # [s]
+    num_checks: int = 10,
+    window_length: float = 1.0,  # [s]
+):
+    requests: dict[str, bool] = {}
+
+    async def request_tracker(
+        session: CdpSession,
+        task_status: "trio._core._run._TaskStatusIgnored" = trio.TASK_STATUS_IGNORED,
+    ):
+        ...
+
+    ready = trio.Event()
+
+    async def await_pending_requests(
+        task_status: "trio._core._run._TaskStatusIgnored" = trio.TASK_STATUS_IGNORED,
+    ):
+        ...
+
+    async with driver.bidi_connection() as bidi_session:
+        ...
+                        </code></pre>
+                    </div>
+                    <div class="w-50">
+                        <pre><code class="stretch large2 language-python" data-line-numbers="" data-trim="">
+requests: dict[str, bool] = {}
+
+async def request_tracker(
+    session: CdpSession,
+    task_status: "trio._core._run._TaskStatusIgnored" = trio.TASK_STATUS_IGNORED,
+):
+    task_status.started()
+    async for event in session.listen(
+        RequestWillBeSent, LoadingFailed, LoadingFinished
+    ):
+        match event:
+            case RequestWillBeSent(request_id=request_id, request=request):
+                LOG.debug("New request: %s", request)
+                requests[request_id] = True
+            case LoadingFailed(request_id=request_id) | LoadingFinished(
+                request_id=request_id
+            ):
+                LOG.debug("Request finalized: %s", request_id)
+                requests[request_id] = False
+                        </code></pre>
+                    </div>
+                </section>
+                <section data-transition="fade-in fade-out" data-background-color="#172030">
+                    <div class="w-50">
+                        <pre><code class="stretch large2 language-python" data-line-numbers="16-21" data-trim>
+async def execute_and_await(
+    driver: WebDriver,
+    action: Callable[[], None],
+    timeout: float = 10.0,  # [s]
+    num_checks: int = 10,
+    window_length: float = 1.0,  # [s]
+):
+    requests: dict[str, bool] = {}
+
+    async def request_tracker(
+        session: CdpSession,
+        task_status: "trio._core._run._TaskStatusIgnored" = trio.TASK_STATUS_IGNORED,
+    ):
+        ...
+
+    ready = trio.Event()
+
+    async def await_pending_requests(
+        task_status: "trio._core._run._TaskStatusIgnored" = trio.TASK_STATUS_IGNORED,
+    ):
+        ...
+
+    async with driver.bidi_connection() as bidi_session:
+        ...
+                        </code></pre>
+                    </div>
+                    <div class="w-50">
+                        <pre><code class="stretch large2 language-python" data-line-numbers="" data-trim="">
+ready = trio.Event()
+
+async def await_pending_requests(
+    task_status: "trio._core._run._TaskStatusIgnored" = trio.TASK_STATUS_IGNORED,
+):
+    checks = deque(range(num_checks), maxlen=num_checks)
+    check_interval = window_length // max(num_checks, 1)
+    task_status.started()
+    while True:
+        num_pending_requests = sum(requests.values())
+        checks.append(num_pending_requests)
+        status = sum(checks) == 0
+        if status:
+            ready.set()
+            break
+        await trio.sleep(check_interval)
+                        </code></pre>
+                    </div>
+                </section>
+                <section data-transition="fade-in fade-out" data-background-color="#172030">
+                    <div class="w-50">
+                        <pre><code class="stretch large2 language-python" data-line-numbers="23-24" data-trim>
+async def execute_and_await(
+    driver: WebDriver,
+    action: Callable[[], None],
+    timeout: float = 10.0,  # [s]
+    num_checks: int = 10,
+    window_length: float = 1.0,  # [s]
+):
+    requests: dict[str, bool] = {}
+
+    async def request_tracker(
+        session: CdpSession,
+        task_status: "trio._core._run._TaskStatusIgnored" = trio.TASK_STATUS_IGNORED,
+    ):
+        ...
+
+    ready = trio.Event()
+
+    async def await_pending_requests(
+        task_status: "trio._core._run._TaskStatusIgnored" = trio.TASK_STATUS_IGNORED,
+    ):
+        ...
+
+    async with driver.bidi_connection() as bidi_session:
+        ...
+                        </code></pre>
+                    </div>
+                    <div class="w-50">
+                        <pre><code class="stretch large2 language-python" data-line-numbers="" data-trim="">
+async with driver.bidi_connection() as bidi_session:
+    session: CdpSession = bidi_session.session
+    await session.execute(network.enable())
+    async with trio.open_nursery() as nursery:
+        await nursery.start(request_tracker, session)
+        await nursery.start(await_pending_requests)
+        action()
+        with trio.move_on_after(timeout) as cancel_scope:
+            await ready.wait()
+        if cancel_scope.cancelled_caught:
+            LOG.debug("Timeout waiting for pending requests.")
+        nursery.cancel_scope.cancel()
+                        </code></pre>
+                    </div>
+                </section>
+                <section data-background-color="#172030">
+                    <div class="w-50">
+                        <pre><code class="large2 language-python" data-trim data-line-numbers="7">
+def test_results_are_displayed_after_click_button(
+    application: ThreadedFlaskServer, driver: WebDriver
+):
+    driver.get(application.url)
+    button = driver.find_element(By.ID, "get-results")
+    results = driver.find_element(By.ID, "results")
+    button.click()
+    assert results.text == "some very important data"
+                        </code></pre>
+                    </div>
+                    <div class="w-50">
+                        <pre><code class="large2 language-python" data-trim data-line-numbers="7">
+def test_results_are_displayed_after_click_button(
+    application: ThreadedFlaskServer, driver: WebDriver
+):
+    driver.get(application.url)
+    button = driver.find_element(By.ID, "get-results")
+    results = driver.find_element(By.ID, "results")
+    trio.run(execute_and_await, driver, button.click)
+    assert results.text == "some very important data"
+                        </code></pre>
+                    </div>
+                </section>
+                <section data-background-color="#172030">
+                    <img alt="" src="images/assertion_passed.png">
+                </section>
+                <section>
+                    <div class="w-1100">
+                        <h1 class="r-fit-text">What else we can find in CDP?</h1>
+                    </div>
+                </section>
+                <section data-background-color="white">
+                    <div class="w-1100">
+                        <img alt="" src="images/cdp_download.png">
+                    </div>
+                </section>
+                <section>
+                    <div class="w-1100">
+                        <h1 style="font-size: 5rem;">Summary</h1>
+                        <p>
+                            Need more interaction with the browser in your tests or your application itself?
+                            <strong>Chrome DevTools Protocol</strong> and <strong>WebDriver BiDi API</strong>
+                            might be the solution.
+                        </p>
+                    </div>
+                </section>
+                <section>
+                    <div class="w-1100">
+                        <h1>Thank you</h1>
+                        <a href="https://github.com/iamhatesz/pyconpl-2022" target="_blank">
+                            https://github.com/iamhatesz/pyconpl-2022
+                        </a>
+                    </div>
+                </section>
+                <section>
+                    <div class="w-1100">
+                        <h1 style="font-size: 2rem;">Resources</h1>
+                        <ul style="font-size: 0.9rem;">
+                            <li><a href="https://chromedevtools.github.io/devtools-protocol/">https://chromedevtools.github.io/devtools-protocol/</a></li>
+                            <li><a href="https://github.com/ChromeDevTools/awesome-chrome-devtools">https://github.com/ChromeDevTools/awesome-chrome-devtools</a></li>
+                            <li><a href="https://www.selenium.dev/documentation/webdriver/bidirectional/bidi_api/">https://www.selenium.dev/documentation/webdriver/bidirectional/bidi_api/</a></li>
+                            <li><a href="https://trio.readthedocs.io/en/stable/">https://trio.readthedocs.io/en/stable/</a></li>
+                            <li><a href="https://www.globalapptesting.com/engineering/reinforcement-learning-for-web-testing-at-global-app-testing">https://www.globalapptesting.com/engineering/reinforcement-learning-for-web-testing-at-global-app-testing</a></li>
+                        </ul>
+                    </div>
+                </section>
+			</div>
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="plugin/notes/notes.js"></script>
+		<script src="plugin/markdown/markdown.js"></script>
+		<script src="plugin/highlight/highlight.js"></script>
+		<script>
+			// More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
+			Reveal.initialize({
+				hash: true,
+                width: 1400,
+                // height: "80%",
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [ RevealMarkdown, RevealHighlight, RevealNotes ]
+			});
+		</script>
+	</body>
+</html>
